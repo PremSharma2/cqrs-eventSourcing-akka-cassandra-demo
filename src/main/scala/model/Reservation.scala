@@ -1,7 +1,6 @@
 package model
 
 
-
 import java.sql.Date
 import scala.util.Random
 
@@ -15,10 +14,10 @@ case class Reservation(
                         confirmationNumber: String
                       ) {
 
-  def intersect(another: Reservation) =
+  def intersect(another: Reservation): Boolean =
     this.hotelId == another.hotelId && this.roomNumber == another.roomNumber &&
       (
-        startDate.compareTo(another.startDate) >= 0 && startDate.compareTo(another.endDate) <=0 ||
+        startDate.compareTo(another.startDate) >= 0 && startDate.compareTo(another.endDate) <= 0 ||
           another.startDate.compareTo(startDate) >= 0 && another.startDate.compareTo(endDate) <= 0
         )
 
