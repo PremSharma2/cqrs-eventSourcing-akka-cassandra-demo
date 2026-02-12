@@ -1,6 +1,6 @@
 package model
 import akka.actor.typed.ActorRef
-import java.util.Date
+import java.sql.Date
 
 // commands
 sealed trait Command
