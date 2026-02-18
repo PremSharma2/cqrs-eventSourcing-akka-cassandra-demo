@@ -16,6 +16,7 @@ object Hotel {
   def commandHandler(hotelId: String): (State, Command) => Effect[Event, State] = (state, command) =>
     command match {
       case MakeReservation(guestId, startDate, endDate, roomNumber, replyTo) =>
+        println(s"[Hotel-Actor] -> Input Command Received : $command ")
         val tentativeReservation = Reservation.make(guestId, hotelId, startDate, endDate, roomNumber)
         val conflictingReservationOption: Option[Reservation] = state.reservations.find(r => r.intersect(tentativeReservation))
         if (conflictingReservationOption.isEmpty) {
@@ -33,14 +34,23 @@ object Hotel {
         // create new tentative reservation
         // find if they conflict, if so => failure
         // otherwise, persist ReservationChanged
+        println(s"[Hotel-Actor] -> Input Command Received : $command ")
         val oldReservationOption = state.reservations.find(_.confirmationNumber == confirmationNumber)
+        //creating tentative reservation
         val newReservationOption = oldReservationOption
           .map(res => res.copy(startDate = startDate, endDate = endDate, roomNumber = roomNumber))
+
         val reservationUpdatedEventOption = oldReservationOption.zip(newReservationOption)
           .map(ReservationUpdated.tupled)
-        val conflictingReservationOption = newReservationOption.flatMap { tentativeReservation =>
-          state.reservations.find(r => r.confirmationNumber != confirmationNumber && r.intersect(tentativeReservation))
-        }
+
+        val conflictingReservationOption =
+          newReservationOption
+            .flatMap {
+              tentativeReservation =>
+                state
+                  .reservations
+                  .find(r => r.confirmationNumber != confirmationNumber && r.intersect(tentativeReservation))
+            }
 
         (reservationUpdatedEventOption, conflictingReservationOption) match {
           case (None, _) =>
@@ -52,6 +62,7 @@ object Hotel {
         }
 
       case CancelReservation(confirmationNumber, replyTo) =>
+        println(s"[Hotel-Actor] -> Input Command Received : $command ")
         val reservationOption = state.reservations.find(_.confirmationNumber == confirmationNumber)
         reservationOption match {
           case Some(res) =>
